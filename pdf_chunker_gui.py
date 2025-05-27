@@ -6,6 +6,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from PySide6.QtCore import Qt, Signal
 from pdf_chunker import PDFChunker
 
+__version__ = "0.1.0"
+
 class PDFChunkerApp(QMainWindow):
     """
     PDF 分割工具的 GUI 應用程式
@@ -27,7 +29,7 @@ class PDFChunkerApp(QMainWindow):
         """
         初始化使用者界面
         """
-        self.setWindowTitle("PDF 分割工具")
+        self.setWindowTitle(f"PDF 分割工具 v{__version__}")
         self.setGeometry(100, 100, 800, 600)
         self.setMinimumSize(600, 400)
         
