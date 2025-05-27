@@ -13,6 +13,10 @@ A desktop application that allows users to select a PDF file, view its table of 
 - **Automatic Chunking**: Automatically determines page ranges and creates new PDF files based on selected chapters
 - **Friendly Naming**: Chunked files are named using the original filename plus the chapter title
 
+## Screenshot
+
+![PDFChunker Screenshot](./PDFChunker_screenshot.png)
+
 ## Technology Stack
 
 - **Programming Language**: Python
