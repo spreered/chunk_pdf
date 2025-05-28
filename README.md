@@ -1,5 +1,9 @@
 # PDF Chunking Tool
 
+<img src="./assets/icon.png" width="128" height="128" alt="PDFChunker Icon">
+
+可以將 PDF 電子書依照自己所選的章節切成多個 PDF 檔案，方便後續使用（例如餵給 ChatGPT 或 Notebooklm）
+
 A desktop application that allows users to select a PDF file, view its table of contents, and chunk the PDF into multiple smaller PDF files based on selected chapters. The application runs locally and prioritizes ease of use for PDF processing.
 
 ## Features
@@ -42,6 +46,8 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Method 1: Running from Source Code
+
 1. Launch the application:
 
 ```bash
@@ -59,6 +65,16 @@ python pdf_chunker_gui.py
 5. Select an output directory
 
 6. Wait for the process to complete; the system will display a list of created PDF chunk files
+
+### Method 2: Using Pre-compiled Version (macOS)
+
+1. Go to the GitHub Releases page and download the latest `.dmg` file
+
+2. Open the `.dmg` file and drag the PDFChunker application to your Applications folder
+
+3. Launch PDFChunker from the Applications folder or Launchpad
+
+4. Follow steps 2-6 as described above
 
 ## Creating a Standalone Application (macOS)
 
