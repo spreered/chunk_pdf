@@ -16,6 +16,7 @@ A desktop application that allows users to select a PDF file, view its table of 
   - When a parent chapter is not selected, child chapters can be individually selected
 - **Automatic Chunking**: Automatically determines page ranges and creates new PDF files based on selected chapters
 - **Friendly Naming**: Chunked files are named using the original filename plus the chapter title
+- **CLI / Headless Mode**: Scriptable command-line interface with JSON output, designed for AI agents and automation pipelines
 
 ## Screenshot
 
@@ -38,7 +39,16 @@ A desktop application that allows users to select a PDF file, view its table of 
 
 1. Clone or download this project to your local machine
 
-2. Install dependencies:
+2. Install dependencies. Choose either method:
+
+**With uv (recommended):**
+
+```bash
+uv sync              # Installs CLI/runtime + dev dependencies
+uv sync --extra gui  # Also install PySide6 for the GUI
+```
+
+**With pip:**
 
 ```bash
 pip install -r requirements.txt
@@ -66,7 +76,57 @@ python pdf_chunker_gui.py
 
 6. Wait for the process to complete; the system will display a list of created PDF chunk files
 
-### Method 2: Using Pre-compiled Version (macOS)
+### Method 2: Command-Line Interface (Headless / AI agents)
+
+For automation, scripting, or letting an AI agent drive the chunking, use `pdf_chunker_cli.py`. All commands support `--json` for structured output.
+
+Thanks to [PEP 723](https://peps.python.org/pep-0723/) inline metadata, you can run it with **zero setup** via uv:
+
+```bash
+uv run pdf_chunker_cli.py inspect book.pdf
+```
+
+(uv will auto-create an isolated environment with the required dependencies on first run.)
+
+If you have already run `uv sync`, you can also use the project environment directly:
+
+```bash
+uv run python pdf_chunker_cli.py inspect book.pdf
+```
+
+#### `inspect` — show PDF structure
+
+Lists the Table of Contents with the page range each entry would span if selected individually (`span_pages`) and how many descendants it has (`children`). This is what an AI agent reads first to decide how to chunk.
+
+```bash
+uv run pdf_chunker_cli.py inspect book.pdf            # human-readable
+uv run pdf_chunker_cli.py inspect book.pdf --json     # JSON for scripts/agents
+```
+
+#### `plan` — preview chunks without writing files
+
+Pure dry-run. Returns the chunks that *would* be produced, including page ranges, page counts, and output paths.
+
+```bash
+uv run pdf_chunker_cli.py plan book.pdf --level 1 -o ./out --json
+uv run pdf_chunker_cli.py plan book.pdf --select 0,3-5 -o ./out --json
+uv run pdf_chunker_cli.py plan book.pdf --match "第.*章" -o ./out --json
+```
+
+Selection modes (mutually exclusive, one required):
+- `--select <indices>`: comma-separated indices/ranges, e.g. `0,2,5-7`. Indices come from `inspect`.
+- `--level <N>`: select every ToC entry at level N (e.g. `--level 1` for top-level chapters).
+- `--match <regex>`: select every ToC entry whose title matches the regex.
+
+#### `chunk` — write the PDF files
+
+Same arguments as `plan`, but actually writes the output PDFs.
+
+```bash
+uv run pdf_chunker_cli.py chunk book.pdf --level 1 -o ./out --json
+```
+
+### Method 3: Using Pre-compiled Version (macOS)
 
 1. Go to the GitHub Releases page and download the latest `.dmg` file
 
@@ -121,9 +181,23 @@ dist/
 
 - `pdf_chunker.py`: Core logic class for handling PDF loading, ToC extraction, and chunking functionality
 - `pdf_chunker_gui.py`: GUI implementation using PySide6 to create the user interface
-- `test_chunker.py`: Test script for testing core logic functionality
+- `pdf_chunker_cli.py`: Command-line interface (`inspect` / `plan` / `chunk`) with JSON output, suitable for AI agents and automation. Includes PEP 723 inline metadata for `uv run` zero-setup execution.
+- `test_chunker.py`: Smoke-test script for testing core logic functionality
+- `test_cli.py`: pytest suite covering the CLI (JSON schema, selection modes, error paths)
 - `create_test_pdf.py`: Script for creating test PDF files
-- `requirements.txt`: List of dependencies
+- `pyproject.toml`: uv project configuration (runtime, optional `gui` extra, and `dev` group)
+- `requirements.txt`: Legacy dependency list for `pip install`
+
+## Testing
+
+Run the pytest suite (uses `uv` to manage the dev environment):
+
+```bash
+uv sync                # Installs pytest into .venv
+uv run pytest          # Runs test_cli.py
+```
+
+The suite covers the CLI's JSON schema contract, all three selection modes, real PDF output verification, and error exit codes.
 
 ## Error Handling
 
