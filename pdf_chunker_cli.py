@@ -80,8 +80,12 @@ def resolve_selection(chunker, args):
     return [{**item, "selected": i in chosen} for i, item in enumerate(toc)]
 
 
-def build_plan(chunker, selections, output_dir):
+def build_plan(chunker, selections, output_dir, prefix_index=False):
     ranges = chunker.determine_chunk_ranges(selections)
+    if prefix_index:
+        width = max(2, len(str(len(ranges))))
+        for i, r in enumerate(ranges, 1):
+            r["title"] = f"{i:0{width}d}_{r['title']}"
     original = os.path.splitext(os.path.basename(chunker.pdf_path))[0]
     out_dir = output_dir or os.path.dirname(chunker.pdf_path) or os.getcwd()
     enriched = []
@@ -138,7 +142,7 @@ def cmd_plan(args):
     if not chunker.toc:
         raise SystemExit("error: PDF has no table of contents")
     selections = resolve_selection(chunker, args)
-    _, plan = build_plan(chunker, selections, args.output_dir)
+    _, plan = build_plan(chunker, selections, args.output_dir, args.prefix_index)
     chunker.close()
     if args.json:
         print(json.dumps(plan, ensure_ascii=False, indent=2))
@@ -160,7 +164,7 @@ def cmd_chunk(args):
     if not chunker.toc:
         raise SystemExit("error: PDF has no table of contents")
     selections = resolve_selection(chunker, args)
-    ranges, _ = build_plan(chunker, selections, args.output_dir)
+    ranges, _ = build_plan(chunker, selections, args.output_dir, args.prefix_index)
     created = chunker.create_chunks(ranges, output_dir=args.output_dir)
     chunker.close()
     result_chunks = [
@@ -197,6 +201,11 @@ def add_selection(parser):
     g.add_argument("--match", help="regex matched against titles")
     parser.add_argument(
         "-o", "--output-dir", help="output directory (default: same dir as PDF)"
+    )
+    parser.add_argument(
+        "--prefix-index",
+        action="store_true",
+        help="prefix output filenames with zero-padded index (01_, 02_, ...) for reading-order sort",
     )
 
 
