@@ -118,6 +118,14 @@ Selection modes (mutually exclusive, one required):
 - `--level <N>`: select every ToC entry at level N (e.g. `--level 1` for top-level chapters).
 - `--match <regex>`: select every ToC entry whose title matches the regex.
 
+Output options:
+- `--prefix-index`: prefix output filenames with a zero-padded index (`01_`, `02_`, ...) so chunks sort in reading order in Finder / file managers / tools like NotebookLM. Width is `max(2, digits(total_chunks))`.
+
+```bash
+uv run pdf_chunker_cli.py chunk book.pdf --level 1 -o ./out --prefix-index --json
+# → book_01_Introduction.pdf, book_02_Chapter One.pdf, ...
+```
+
 #### `chunk` — write the PDF files
 
 Same arguments as `plan`, but actually writes the output PDFs.

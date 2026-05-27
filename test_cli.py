@@ -93,6 +93,34 @@ def test_chunk_writes_files(test_pdf, tmp_path):
         doc.close()
 
 
+def test_prefix_index_plan(test_pdf, tmp_path):
+    r = run_cli(
+        "plan", str(test_pdf),
+        "--level", "1", "-o", str(tmp_path),
+        "--prefix-index", "--json",
+    )
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    titles = [c["title"] for c in data["chunks"]]
+    assert titles == ["01_第一章", "02_第二章", "03_第三章", "04_附錄"]
+    for i, c in enumerate(data["chunks"], 1):
+        assert f"_{i:02d}_" in Path(c["output"]).name
+
+
+def test_prefix_index_chunk_writes_prefixed_files(test_pdf, tmp_path):
+    r = run_cli(
+        "chunk", str(test_pdf),
+        "--level", "1", "-o", str(tmp_path),
+        "--prefix-index", "--json",
+    )
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    for c in data["chunks"]:
+        out = Path(c["output"])
+        assert out.exists()
+        assert out.name.startswith("test_0")  # original_<NN>_...
+
+
 def test_error_select_out_of_range(test_pdf, tmp_path):
     r = run_cli("plan", str(test_pdf), "--select", "99", "-o", str(tmp_path))
     assert r.returncode == 1
